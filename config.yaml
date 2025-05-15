@@ -1,0 +1,3 @@
+db_type: json
+gradio_port: 7860
+chatbot_model: facebook/blenderbot-400M-distill
