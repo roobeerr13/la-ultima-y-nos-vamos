@@ -1,4 +1,4 @@
-from .token_nft import TokenNFT
+from src.models.token_nft import TokenNFT
 from ..repositories.nft_repo import NFTRepository
 
 class NFTService:

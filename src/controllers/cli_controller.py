@@ -1,7 +1,7 @@
 import cmd
-from .poll_service import PollService
-from .user_service import UserService
-from .nft_service import NFTService
+from src.services.poll_service import PollService  # Corrected import
+from src.services.user_service import UserService
+from src.services.nft_service import NFTService
 
 class CLIController(cmd.Cmd):
     def __init__(self, poll_service: PollService, user_service: UserService, nft_service: NFTService):
