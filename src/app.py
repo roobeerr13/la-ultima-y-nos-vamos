@@ -1,42 +1,32 @@
-import argparse
 from .controllers.cli_controller import CLIController
-from .ui.gradio_app import create_ui
 from .services.poll_service import PollService
 from .services.user_service import UserService
 from .services.nft_service import NFTService
-from .services.chatbot_service import ChatbotService
 from .repositories.encuesta_repo import PollRepository
 from .repositories.usuario_repo import UserRepository
 from .repositories.nft_repo import NFTRepository
 from .patterns.strategy import RandomTieBreaker
+from .ui.gradio_app import create_ui
+import sys
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--ui", action="store_true", help="Launch Gradio UI")
-    args = parser.parse_args()
-
-    # Initialize repositories
-    poll_repo = PollRepository("polls.json")
-    user_repo = UserRepository("users.json")
-    nft_repo = NFTRepository("nfts.json")
-
-    # Initialize services
+    file_path = "data/polls.json"
+    poll_repo = PollRepository(file_path)
+    user_file_path = "data/users.json"
+    user_repo = UserRepository(user_file_path)
+    nft_file_path = "data/nfts.json"
+    nft_repo = NFTRepository(nft_file_path)
     tie_breaker = RandomTieBreaker()
     poll_service = PollService(poll_repo, tie_breaker)
     user_service = UserService(user_repo)
     nft_service = NFTService(nft_repo)
-    chatbot_service = ChatbotService(poll_service)
+    cli_controller = CLIController(poll_service, user_service, nft_service)
 
-    # Attach observers
-    poll_service.attach(nft_service)  # Mint NFT on vote
-    poll_service.attach(chatbot_service)  # Update chatbot on poll events
-
-    if args.ui:
-        ui = create_ui(poll_service, chatbot_service, nft_service)
+    if len(sys.argv) > 1 and sys.argv[1] == "--ui":
+        ui = create_ui(cli_controller)
         ui.launch()
     else:
-        cli = CLIController(poll_service, user_service, nft_service)
-        cli.cmdloop()
+        cli_controller.cmdloop()
 
 if __name__ == "__main__":
     main()

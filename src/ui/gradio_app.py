@@ -1,28 +1,23 @@
-import gradio_app as gr
-from src.services.poll_service import PollService
-from src.services.chatbot_service import ChatbotService
-from src.repositories.nft_repo import NFTService
+import gradio as gr  # Corrected import
+from src.controllers.ui_controller import UIController
 
-def create_ui(poll_service: PollService, chatbot_service: ChatbotService, nft_service: NFTService):
-    with gr.Blocks() as demo:
-        gr.Markdown("# Stream Voting App")
+def create_ui(ui_controller: UIController):
+    def vote_wrapper(poll_id: str, username: str, option: str) -> str:
+        try:
+            ui_controller.vote(poll_id, username, option)
+            return "Vote registered successfully!"
+        except ValueError as e:
+            return f"Error: {e}"
 
-        with gr.Tab("Polls"):
-            poll_id = gr.Dropdown(label="Select Poll", choices=[p.id for p in poll_service.get_active_polls()])
-            option = gr.Radio(label="Vote", choices=[])
-            vote_btn = gr.Button("Submit Vote")
-            vote_output = gr.Textbox(label="Result")
-            vote_btn.click(fn=lambda pid, opt, user: poll_service.vote(pid, user, opt), inputs=[poll_id, option, gr.State("user")], outputs=vote_output)
-
-        with gr.Tab("Chatbot"):
-            chatbot = gr.ChatInterface(fn=chatbot_service.respond, additional_inputs=[gr.State("user")])
-
-        with gr.Tab("NFTs"):
-            tokens = gr.Dataframe(label="Your Tokens", value=lambda: nft_service.get_user_tokens("user"))
-            transfer_id = gr.Textbox(label="Token ID to Transfer")
-            new_owner = gr.Textbox(label="New Owner")
-            transfer_btn = gr.Button("Transfer")
-            transfer_output = gr.Textbox(label="Result")
-            transfer_btn.click(fn=lambda tid, no, user: nft_service.transfer_token(tid, user, no), inputs=[transfer_id, new_owner, gr.State("user")], outputs=transfer_output)
-
+    demo = gr.Interface(
+        fn=vote_wrapper,
+        inputs=[
+            gr.Textbox(label="Poll ID"),
+            gr.Textbox(label="Username"),
+            gr.Textbox(label="Option")
+        ],
+        outputs="text",
+        title="StreamApp Voting System",
+        description="Enter the Poll ID, your username, and your voting option."
+    )
     return demo
