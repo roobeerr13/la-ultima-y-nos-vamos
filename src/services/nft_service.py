@@ -1,5 +1,6 @@
 from src.models.token_nft import TokenNFT
-from ..repositories.nft_repo import NFTRepository
+from src.repositories.nft_repo import NFTRepository
+from datetime import datetime
 
 class NFTService:
     def __init__(self, nft_repo: NFTRepository):

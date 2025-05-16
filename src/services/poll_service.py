@@ -55,7 +55,6 @@ class PollService(Subject):
         return self.poll_repo.find_by_id(poll_id)
 
     def get_active_polls(self) -> List[Poll]:
-        # This method might be called by UIController; implement it
         data = self.poll_repo._load_data()
         polls = [Poll(**poll_data) for poll_data in data.values()]
         return [poll for poll in polls if poll.is_active()]
