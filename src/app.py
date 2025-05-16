@@ -7,7 +7,7 @@ from .services.chatbot_service import ChatbotService
 from .services.dashboard_service import DashboardService
 from .repositories.firebase_repo import FirebaseRepository
 from .patterns.strategy import RandomTieBreaker
-from .ui.gradio_app import create_ui
+from .ui.gradio_ui import create_ui
 import sys
 from datetime import datetime
 
