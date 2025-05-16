@@ -7,7 +7,7 @@ try:
     cred = credentials.Certificate("src/serviceAccountKey.json")
     firebase_admin.initialize_app(cred, {
         'projectId': 'streamapp-19258',
-        'databaseId': 'streamapp'  # Ajusta este valor al nombre real de tu base de datos (puede ser 'default' o 'streamapp')
+        'databaseId': 'streamapp'  # Asegúrate de que esto esté aquí y sea 'streamapp'
     })
 except FileNotFoundError:
     raise FileNotFoundError("El archivo serviceAccountKey.json no se encuentra en src/. Descarga el archivo desde la Consola de Firebase y colócalo en src/.")
