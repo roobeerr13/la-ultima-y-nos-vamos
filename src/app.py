@@ -9,9 +9,38 @@ from .repositories.firebase_repo import FirebaseRepository
 from .patterns.strategy import RandomTieBreaker
 from .ui.gradio_app import create_ui
 import sys
+from datetime import datetime
 
 def main():
     repo = FirebaseRepository()
+    
+    # Inicializar colecciones básicas si no existen
+    initial_poll = {
+        "id": "initial_poll",
+        "question": "¿Qué prefieres?",
+        "options": ["Opción 1", "Opción 2"],
+        "votes": {},
+        "status": "active",
+        "created_at": datetime.now().isoformat(),
+        "duration_seconds": 3600
+    }
+    initial_user = {
+        "username": "admin",
+        "password_hash": "hashed_password_here",  # Reemplaza con un hash real
+        "token": "initial_token",
+        "token_ids": []
+    }
+    initial_nft = {
+        "token_id": "initial_nft",
+        "owner": "admin",
+        "poll_id": "initial_poll",
+        "option": "Opción 1",
+        "issued_at": datetime.now().isoformat()
+    }
+    repo.save("polls", "initial_poll", initial_poll)
+    repo.save("users", "admin", initial_user)
+    repo.save("nfts", "initial_nft", initial_nft)
+
     tie_breaker = RandomTieBreaker()
     user_service = UserService(repo)
     nft_service = NFTService(repo)
