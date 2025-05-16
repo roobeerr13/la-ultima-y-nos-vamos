@@ -8,7 +8,7 @@ from src.patterns.strategy import TieBreakerStrategy
 from sentence_transformers import SentenceTransformer
 
 class PollService(Subject):
-    def __init__(self, poll_repo: FirebaseRepository, tie_breaker: TieBreakerStrategy, nft_service, user_service, chatbot_service):
+    def __init__(self, poll_repo: FirebaseRepository, tie_breaker: TieBreakerStrategy, nft_service, user_service, chatbot_service=None):
         super().__init__()
         self.poll_repo = poll_repo
         self.tie_breaker = tie_breaker
