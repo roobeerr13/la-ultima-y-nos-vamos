@@ -1,19 +1,25 @@
-import firebase_admin
-from firebase_admin import credentials
-from google.cloud import firestore 
+# import firebase_admin # Puedes comentar o mantener si usas otras funciones de Admin SDK
+# from firebase_admin import credentials # Puedes comentar o mantener si usas otras funciones de Admin SDK
+
+# Importa el cliente de firestore directamente desde google.cloud
+from google.cloud import firestore
+import google.auth  # <-- ¡Importa google.auth!
+
 from typing import Optional, List
 from datetime import datetime
+
+SERVICE_ACCOUNT_FILE = "src/serviceAccountKey.json"
+PROJECT_ID = 'streamapp-19258'
+DATABASE_ID = 'streamapp' # Asegúrate de que esto sea 'streamapp'
+
 try:
-    cred = credentials.Certificate("src/serviceAccountKey.json")
-    firebase_admin.initialize_app(cred, {
-        'projectId': 'streamapp-19258',
-        'databaseId': 'streamapp'
-    })
-
-    db = firestore.Client(project='streamapp-19258', database='streamapp')
-
+    credentials, project = google.auth.load_credentials_from_file(SERVICE_ACCOUNT_FILE)
+    db = firestore.Client(project=PROJECT_ID, database=DATABASE_ID, credentials=credentials) 
 except FileNotFoundError:
-    raise FileNotFoundError("El archivo serviceAccountKey.json no se encuentra en src/. Descarga el archivo desde la Consola de Firebase y colócalo en src/.")
+    raise FileNotFoundError(f"El archivo {SERVICE_ACCOUNT_FILE} no se encuentra. Descarga el archivo desde la Consola de Firebase (Configuración del proyecto > Cuentas de servicio > Node.js) y colócalo en src/.")
+except Exception as e:
+     print(f"Error durante la inicialización de Firebase o Firestore: {e}")
+     raise
 
 class FirebaseRepository:
     def save(self, collection: str, doc_id: str, data: dict) -> None:
@@ -49,4 +55,3 @@ class FirebaseRepository:
                 data["created_at"] = datetime.fromisoformat(data["created_at"])
             result.append(data)
         return result
-
