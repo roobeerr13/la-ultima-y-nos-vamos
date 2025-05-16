@@ -1,13 +1,13 @@
-from .controllers.cli_controller import CLIController
-from .controllers.ui_controller import UIController
-from .services.poll_service import PollService
-from .services.user_service import UserService
-from .services.nft_service import NFTService
-from .repositories.encuesta_repo import PollRepository
-from .repositories.usuario_repo import UserRepository
-from .repositories.nft_repo import NFTRepository
-from .patterns.strategy import RandomTieBreaker
-from .ui.gradio_app import create_ui
+from src.controllers.cli_controller import CLIController
+from src.controllers.ui_controller import UIController
+from src.services.poll_service import PollService
+from src.services.user_service import UserService
+from src.services.nft_service import NFTService
+from src.repositories.encuesta_repo import PollRepository
+from src.repositories.usuario_repo import UserRepository
+from src.repositories.nft_repo import NFTRepository
+from src.patterns.strategy import RandomTieBreaker
+from src.ui.gradio_app import create_ui
 import sys
 
 def main():
