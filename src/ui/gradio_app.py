@@ -1,4 +1,4 @@
-import gradio as gr
+import gradio_app as gr
 from src.services.poll_service import PollService
 from src.services.chatbot_service import ChatbotService
 from src.repositories.nft_repo import NFTService
