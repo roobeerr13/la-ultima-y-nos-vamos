@@ -56,5 +56,9 @@ class PollService(Subject):
 
     def get_active_polls(self) -> List[Poll]:
         data = self.poll_repo._load_data()
-        polls = [Poll(**poll_data) for poll_data in data.values()]
+        polls = []
+        for poll_data in data.values():
+            if 'created_at' in poll_data and isinstance(poll_data['created_at'], str):
+                poll_data['created_at'] = datetime.fromisoformat(poll_data['created_at'])
+            polls.append(Poll(**poll_data))
         return [poll for poll in polls if poll.is_active()]
