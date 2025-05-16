@@ -1,5 +1,5 @@
 import gradio as gr
-from controllers.ui_controller import UIController
+from ..controllers.ui_controller import UIController
 
 def create_ui(ui_controller: UIController):
     def vote_wrapper(poll_id: str, username: str, option: str) -> str:
