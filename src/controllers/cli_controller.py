@@ -2,40 +2,42 @@ import cmd
 from src.services.poll_service import PollService
 from src.services.user_service import UserService
 from src.services.nft_service import NFTService
+from src.services.chatbot_service import ChatbotService
 
 class CLIController(cmd.Cmd):
-    def __init__(self, poll_service: PollService, user_service: UserService, nft_service: NFTService):
+    def __init__(self, poll_service: PollService, user_service: UserService, nft_service: NFTService, chatbot_service: ChatbotService):
         super().__init__()
         self.poll_service = poll_service
         self.user_service = user_service
         self.nft_service = nft_service
+        self.chatbot_service = chatbot_service
         self.prompt = "(StreamApp) "
 
     def do_create_poll(self, line: str) -> None:
         parts = line.split("|")
         if len(parts) < 3 or not all(parts):
-            print("Usage: create_poll <question>|<options>|<duration>")
+            print("Uso: create_poll <pregunta>|<opciones>|<duración>")
             return
         try:
             duration = int(parts[-1].strip())
             options_str = parts[-2].strip()
             question = "|".join(parts[:-2]).strip()
             if not question or not options_str:
-                print("Usage: create_poll <question>|<options>|<duration>")
+                print("Uso: create_poll <pregunta>|<opciones>|<duración>")
                 return
             options = [opt.strip() for opt in options_str.split(",") if opt.strip()]
             if not options:
-                print("Usage: create_poll <question>|<options>|<duration>")
+                print("Uso: create_poll <pregunta>|<opciones>|<duración>")
                 return
             poll = self.poll_service.create_poll(question, options, duration)
-            print(f"Poll created: {poll.id}")
+            print(f"Encuesta creada: {poll.id}")
         except ValueError:
-            print("Usage: create_poll <question>|<options>|<duration> (duration must be an integer)")
+            print("Uso: create_poll <pregunta>|<opciones>|<duración> (duración debe ser un entero)")
 
     def do_vote(self, line: str) -> None:
         parts = line.split()
         if len(parts) != 3:
-            print("Error: Uso: vote <poll_id> <username> <option>")
+            print("Error: Uso: vote <poll_id> <username> <opción>")
             return
         try:
             poll_id, username, option = parts
@@ -62,3 +64,6 @@ class CLIController(cmd.Cmd):
             print(f"Bot: {response}")
         except Exception as e:
             print(f"Error: {e}")
+
+    def do_quit(self, line: str) -> bool:
+        return True

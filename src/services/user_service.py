@@ -1,13 +1,13 @@
 import hashlib
 import uuid
-from src.repositories.usuario_repo import UserRepository
+from src.repositories.firebase_repo import FirebaseRepository
 
 class UserService:
-    def __init__(self, user_repo: UserRepository):
+    def __init__(self, user_repo: FirebaseRepository):
         self.user_repo = user_repo
 
     def register(self, username: str, password: str) -> str:
-        if self.user_repo.find_by_username(username):
+        if self.user_repo.find_by_field("users", "username", username):
             raise ValueError("El usuario ya existe")
         password_hash = hashlib.sha256(password.encode()).hexdigest()
         token = str(uuid.uuid4())
@@ -15,13 +15,13 @@ class UserService:
             "username": username,
             "password_hash": password_hash,
             "token": token,
-            "token_ids": []  # Para almacenar NFTs
+            "token_ids": []
         }
-        self.user_repo.save(user)
+        self.user_repo.save("users", username, user)
         return token
 
     def login(self, username: str, password: str) -> str:
-        user = self.user_repo.find_by_username(username)
+        user = self.user_repo.find_by_field("users", "username", username)
         if not user:
             raise ValueError("Usuario no encontrado")
         hashed = hashlib.sha256(password.encode()).hexdigest()
@@ -30,8 +30,11 @@ class UserService:
         return user["token"]
 
     def add_token(self, username: str, token_id: str) -> None:
-        user = self.user_repo.find_by_username(username)
+        user = self.user_repo.find_by_field("users", "username", username)
         if not user:
             raise ValueError("Usuario no encontrado")
         user["token_ids"].append(token_id)
-        self.user_repo.save(user)
+        self.user_repo.save("users", username, user)
+
+    def find_by_username(self, username: str) -> dict:
+        return self.user_repo.find_by_field("users", "username", username)
