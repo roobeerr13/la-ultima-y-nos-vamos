@@ -13,20 +13,31 @@ class CLIController(cmd.Cmd):
 
     def do_create_poll(self, line: str) -> None:
         args = line.split("|")
-        if len(args) != 3:
+        if len(args) != 3 or not all(args):
             print("Usage: create_poll <question>|<options>|<duration>")
             return
-        question, options, duration = args[0], args[1].split(","), int(args[2])
-        poll = self.poll_service.create_poll(question, options, duration)
-        print(f"Poll created: {poll.id}")
+        question, options_str, duration = args
+        options = [opt.strip() for opt in options_str.split(",") if opt.strip()]
+        if not options:
+            print("Usage: create_poll <question>|<options>|<duration>")
+            return
+        try:
+            duration = int(duration)
+            poll = self.poll_service.create_poll(question, options, duration)
+            print(f"Poll created: {poll.id}")
+        except ValueError:
+            print("Usage: create_poll <question>|<options>|<duration> (duration must be an integer)")
 
     def do_vote(self, line: str) -> None:
-        poll_id, username, option = line.split()
         try:
+            poll_id, username, option = line.split()
             self.poll_service.vote(poll_id, username, option)
             print("Vote registered")
         except ValueError as e:
-            print(f"Error: {e}")
+            if len(line.split()) != 3:
+                print("Usage: vote <poll_id> <username> <option>")
+            else:
+                print(f"Error: {e}")
 
     def do_quit(self, line: str) -> bool:
         return True

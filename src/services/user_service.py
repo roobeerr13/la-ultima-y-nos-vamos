@@ -1,5 +1,6 @@
-from src.models.usuario import User  # Corrected import
+from src.models.usuario import User
 from src.repositories.usuario_repo import UserRepository
+from uuid import uuid4
 import bcrypt
 
 class UserService:
@@ -13,12 +14,11 @@ class UserService:
         user = User(username=username, password_hash=password_hash, token_ids=[])
         self.user_repo.save(user)
 
-    def login(self, username: str, password: str) -> bool:
+    def login(self, username: str, password: str) -> str:
         user = self.user_repo.find_by_username(username)
-        if not user:
-            return False
-        # Since we're using bcrypt, use checkpw to verify the password
-        return bcrypt.checkpw(password.encode(), user.password_hash.encode())
+        if not user or not bcrypt.checkpw(password.encode(), user.password_hash.encode()):
+            raise ValueError("Invalid credentials")
+        return str(uuid4())  # Return a session token
 
     def add_token(self, username: str, token_id: str) -> None:
         user = self.user_repo.find_by_username(username)

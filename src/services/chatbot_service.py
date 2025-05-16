@@ -1,17 +1,18 @@
 from transformers import pipeline
-from .poll_service import PollService
+from src.services.poll_service import PollService
 
 class ChatbotService:
     def __init__(self, poll_service: PollService):
         self.poll_service = poll_service
-        self.chatbot = pipeline("conversational", model="facebook/blenderbot-400M-distill")
+        self.chatbot = pipeline("text-generation", model="gpt2")  
 
-    def respond(self, username: str, message: str) -> str:
-        if "who is winning" in message.lower():
-            # Example of contextual response
-            latest_poll = self.poll_service.get_latest_poll()
-            if latest_poll:
-                results = self.poll_service.get_partial_results(latest_poll.id)
-                return f"Current leader: {max(results.items(), key=lambda x: x[1])[0]} with {results[max(results.items(), key=lambda x: x[1])[0]]} votes."
-        response = self.chatbot(message)
-        return response[-1]["generated_text"]
+    def respond_to_query(self, user_input: str, poll_id: str = None) -> str:
+        active_polls = self.poll_service.get_active_polls()
+        context = "Active polls: " + ", ".join([p.question for p in active_polls]) if active_polls else "No active polls."
+        if poll_id:
+            poll = self.poll_service.find_by_id(poll_id)
+            if poll:
+                context += f" Poll {poll_id} question: {poll.question}, options: {', '.join(poll.options)}"
+        prompt = f"{context}\nUser: {user_input}\nBot:"
+        response = self.chatbot(prompt, max_length=50, num_return_sequences=1)
+        return response[0]['generated_text']
