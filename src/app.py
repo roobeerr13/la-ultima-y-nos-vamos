@@ -1,4 +1,5 @@
 from .controllers.cli_controller import CLIController
+from .controllers.ui_controller import UIController
 from .services.poll_service import PollService
 from .services.user_service import UserService
 from .services.nft_service import NFTService
@@ -21,9 +22,10 @@ def main():
     user_service = UserService(user_repo)
     nft_service = NFTService(nft_repo)
     cli_controller = CLIController(poll_service, user_service, nft_service)
+    ui_controller = UIController(poll_service, user_service, nft_service)
 
     if len(sys.argv) > 1 and sys.argv[1] == "--ui":
-        ui = create_ui(cli_controller)
+        ui = create_ui(ui_controller)
         ui.launch()
     else:
         cli_controller.cmdloop()

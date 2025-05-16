@@ -1,23 +1,61 @@
-import gradio as gr  # Corrected import
-from src.controllers.ui_controller import UIController
+import gradio as gr
+from controllers.ui_controller import UIController
 
 def create_ui(ui_controller: UIController):
     def vote_wrapper(poll_id: str, username: str, option: str) -> str:
-        try:
-            ui_controller.vote(poll_id, username, option)
-            return "Vote registered successfully!"
-        except ValueError as e:
-            return f"Error: {e}"
+        return ui_controller.vote(poll_id, username, option)
 
-    demo = gr.Interface(
-        fn=vote_wrapper,
-        inputs=[
-            gr.Textbox(label="Poll ID"),
-            gr.Textbox(label="Username"),
-            gr.Textbox(label="Option")
+    def create_poll_wrapper(question: str, options: str, duration: str) -> str:
+        return ui_controller.create_poll(question, options, duration)
+
+    def login_wrapper(username: str, password: str) -> str:
+        return ui_controller.login(username, password)
+
+    def register_wrapper(username: str, password: str) -> str:
+        return ui_controller.register(username, password)
+
+    demo = gr.TabbedInterface(
+        [
+            gr.Interface(
+                fn=create_poll_wrapper,
+                inputs=[
+                    gr.Textbox(label="Question"),
+                    gr.Textbox(label="Options (comma-separated)"),
+                    gr.Textbox(label="Duration (seconds)")
+                ],
+                outputs="text",
+                title="Create Poll"
+            ),
+            gr.Interface(
+                fn=vote_wrapper,
+                inputs=[
+                    gr.Textbox(label="Poll ID"),
+                    gr.Textbox(label="Username"),
+                    gr.Textbox(label="Option")
+                ],
+                outputs="text",
+                title="Vote in Poll"
+            ),
+            gr.Interface(
+                fn=login_wrapper,
+                inputs=[
+                    gr.Textbox(label="Username"),
+                    gr.Textbox(label="Password")
+                ],
+                outputs="text",
+                title="Login"
+            ),
+            gr.Interface(
+                fn=register_wrapper,
+                inputs=[
+                    gr.Textbox(label="Username"),
+                    gr.Textbox(label="Password")
+                ],
+                outputs="text",
+                title="Register"
+            )
         ],
-        outputs="text",
-        title="StreamApp Voting System",
-        description="Enter the Poll ID, your username, and your voting option."
+        ["Create Poll", "Vote", "Login", "Register"],
+        title="StreamApp Voting System"
     )
     return demo
