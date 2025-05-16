@@ -1,9 +1,11 @@
 from typing import List, Optional
+from datetime import datetime, timedelta
+from uuid import uuid4
 from src.models.encuesta import Poll
 from src.models.voto import Vote
-from ..repositories.encuesta_repo import PollRepository
-from ..patterns.observer import Subject
-from ..patterns.strategy import TieBreakerStrategy
+from src.repositories.encuesta_repo import PollRepository
+from src.patterns.observer import Subject
+from src.patterns.strategy import TieBreakerStrategy
 
 class PollService(Subject):
     def __init__(self, poll_repo: PollRepository, tie_breaker: TieBreakerStrategy):
@@ -48,3 +50,12 @@ class PollService(Subject):
         else:
             winner = winners[0]
         return {"winner": winner, "results": results}
+
+    def find_by_id(self, poll_id: str) -> Optional[Poll]:
+        return self.poll_repo.find_by_id(poll_id)
+
+    def get_active_polls(self) -> List[Poll]:
+        # This method might be called by UIController; implement it
+        data = self.poll_repo._load_data()
+        polls = [Poll(**poll_data) for poll_data in data.values()]
+        return [poll for poll in polls if poll.is_active()]
