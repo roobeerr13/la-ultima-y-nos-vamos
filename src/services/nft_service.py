@@ -17,3 +17,6 @@ class NFTService:
             raise ValueError("Invalid token or owner")
         token.owner = new_owner
         self.nft_repo.save(token)
+
+    def find_by_id(self, token_id: str) -> TokenNFT:
+        return self.nft_repo.find_by_id(token_id)
