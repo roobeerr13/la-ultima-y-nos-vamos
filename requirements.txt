@@ -1,3 +1,5 @@
-gradio 
-pytest 
-transformers 
+gradio>=3.0
+transformers
+pytest
+bcrypt
+pytest-cov
