@@ -1,17 +1,19 @@
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials
+from google.cloud import firestore 
 from typing import Optional, List
 from datetime import datetime
-
 try:
     cred = credentials.Certificate("src/serviceAccountKey.json")
     firebase_admin.initialize_app(cred, {
         'projectId': 'streamapp-19258',
-        'databaseId': 'streamapp'  # Asegúrate de que esto esté aquí y sea 'streamapp'
+        'databaseId': 'streamapp'
     })
+
+    db = firestore.Client(project='streamapp-19258', database='streamapp')
+
 except FileNotFoundError:
     raise FileNotFoundError("El archivo serviceAccountKey.json no se encuentra en src/. Descarga el archivo desde la Consola de Firebase y colócalo en src/.")
-db = firestore.client()
 
 class FirebaseRepository:
     def save(self, collection: str, doc_id: str, data: dict) -> None:
@@ -47,3 +49,4 @@ class FirebaseRepository:
                 data["created_at"] = datetime.fromisoformat(data["created_at"])
             result.append(data)
         return result
+
