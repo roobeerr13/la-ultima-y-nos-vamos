@@ -1,22 +1,18 @@
 import json
 from typing import Optional
-from src.models.usuario import User
 
 class UserRepository:
     def __init__(self, file_path: str):
         self.file_path = file_path
 
-    def save(self, user: User) -> None:
+    def save(self, user: dict) -> None:
         data = self._load_data()
-        data[user.username] = user.__dict__
+        data[user["username"]] = user
         self._save_data(data)
 
-    def find_by_username(self, username: str) -> Optional[User]:
+    def find_by_username(self, username: str) -> Optional[dict]:
         data = self._load_data()
-        user_data = data.get(username)
-        if user_data:
-            return User(**user_data)
-        return None
+        return data.get(username)
 
     def _load_data(self) -> dict:
         try:

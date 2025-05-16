@@ -35,14 +35,30 @@ class CLIController(cmd.Cmd):
     def do_vote(self, line: str) -> None:
         parts = line.split()
         if len(parts) != 3:
-            print("Error: Usage: vote <poll_id> <username> <option>")
+            print("Error: Uso: vote <poll_id> <username> <option>")
             return
         try:
             poll_id, username, option = parts
-            self.poll_service.vote(poll_id, username, option)
-            print("Vote registered")
+            token = self.poll_service.vote(poll_id, username, option)
+            print(f"Voto registrado. Token generado: {token['token_id']}")
         except ValueError as e:
             print(f"Error: {e}")
 
-    def do_quit(self, line: str) -> bool:
-        return True
+    def do_trade_token(self, line: str) -> None:
+        parts = line.split()
+        if len(parts) != 3:
+            print("Error: Uso: trade_token <token_id> <current_owner> <new_owner>")
+            return
+        try:
+            token_id, current_owner, new_owner = parts
+            self.nft_service.transfer_token(token_id, current_owner, new_owner)
+            print("Token transferido con éxito")
+        except ValueError as e:
+            print(f"Error: {e}")
+
+    def do_chat(self, line: str) -> None:
+        try:
+            response = self.chatbot_service.respond_to_query(line)
+            print(f"Bot: {response}")
+        except Exception as e:
+            print(f"Error: {e}")

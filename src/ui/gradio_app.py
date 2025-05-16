@@ -14,48 +14,79 @@ def create_ui(ui_controller: UIController):
     def register_wrapper(username: str, password: str) -> str:
         return ui_controller.register(username, password)
 
+    def trade_token_wrapper(token_id: str, current_owner: str, new_owner: str) -> str:
+        return ui_controller.nft_service.transfer_token(token_id, current_owner, new_owner)
+
+    def chat_wrapper(user_input: str) -> str:
+        return ui_controller.chatbot_service.respond_to_query(user_input)
+
+    def dashboard_wrapper() -> gr.Image:
+        return ui_controller.dashboard_service.generate_dashboard()
+
     demo = gr.TabbedInterface(
         [
             gr.Interface(
                 fn=create_poll_wrapper,
                 inputs=[
-                    gr.Textbox(label="Question"),
-                    gr.Textbox(label="Options (comma-separated)"),
-                    gr.Textbox(label="Duration (seconds)")
+                    gr.Textbox(label="Pregunta"),
+                    gr.Textbox(label="Opciones (separadas por comas)"),
+                    gr.Textbox(label="Duración (segundos)")
                 ],
                 outputs="text",
-                title="Create Poll"
+                title="Crear Encuesta"
             ),
             gr.Interface(
                 fn=vote_wrapper,
                 inputs=[
-                    gr.Textbox(label="Poll ID"),
-                    gr.Textbox(label="Username"),
-                    gr.Textbox(label="Option")
+                    gr.Textbox(label="ID de la Encuesta"),
+                    gr.Textbox(label="Nombre de Usuario"),
+                    gr.Textbox(label="Opción")
                 ],
                 outputs="text",
-                title="Vote in Poll"
+                title="Votar en Encuesta"
             ),
             gr.Interface(
                 fn=login_wrapper,
                 inputs=[
-                    gr.Textbox(label="Username"),
-                    gr.Textbox(label="Password")
+                    gr.Textbox(label="Nombre de Usuario"),
+                    gr.Textbox(label="Contraseña")
                 ],
                 outputs="text",
-                title="Login"
+                title="Iniciar Sesión"
             ),
             gr.Interface(
                 fn=register_wrapper,
                 inputs=[
-                    gr.Textbox(label="Username"),
-                    gr.Textbox(label="Password")
+                    gr.Textbox(label="Nombre de Usuario"),
+                    gr.Textbox(label="Contraseña")
                 ],
                 outputs="text",
-                title="Register"
+                title="Registrar Usuario"
+            ),
+            gr.Interface(
+                fn=trade_token_wrapper,
+                inputs=[
+                    gr.Textbox(label="ID del Token"),
+                    gr.Textbox(label="Propietario Actual"),
+                    gr.Textbox(label="Nuevo Propietario")
+                ],
+                outputs="text",
+                title="Tradear Token"
+            ),
+            gr.Interface(
+                fn=chat_wrapper,
+                inputs=gr.Textbox(label="Habla con el Bot"),
+                outputs="text",
+                title="Chatbot"
+            ),
+            gr.Interface(
+                fn=dashboard_wrapper,
+                inputs=None,
+                outputs="image",
+                title="Dashboard"
             )
         ],
-        ["Create Poll", "Vote", "Login", "Register"],
-        title="StreamApp Voting System"
+        ["Crear Encuesta", "Votar", "Iniciar Sesión", "Registrar", "Tradear Token", "Chatbot", "Dashboard"],
+        title="StreamApp Sistema de Votación"
     )
     return demo

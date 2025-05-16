@@ -18,15 +18,18 @@ class PollService(Subject):
         self.poll_repo.save(poll)
         return poll
 
-    def vote(self, poll_id: str, username: str, option: str) -> None:
+    def vote(self, poll_id: str, username: str, option: str) -> dict:
         poll = self.poll_repo.find_by_id(poll_id)
         if not poll or not poll.is_active():
-            raise ValueError("Poll is not active")
+            raise ValueError("Encuesta no activa")
         if username in poll.votes:
-            raise ValueError("User already voted")
+            raise ValueError("El usuario ya votó")
         poll.votes[username] = [option]
         self.poll_repo.save(poll)
+        token = self.nft_service.mint_token(username, poll_id, option)
+        self.user_service.add_token(username, token["token_id"])
         self.notify_observers(poll_id, "vote", {"username": username, "option": option})
+        return token
 
     def close_poll(self, poll_id: str) -> None:
         poll = self.poll_repo.find_by_id(poll_id)
