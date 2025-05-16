@@ -1,59 +1,30 @@
-# src/repositories/usuario_repo.py
 import json
-from typing import Optional, List
+from typing import Optional
 from src.models.usuario import User
 
-class UsuarioRepository:
-    def __init__(self, file_path: str = "data/users.json"):
+class UserRepository:
+    def __init__(self, file_path: str):
         self.file_path = file_path
-        self._ensure_file()
 
-    def _ensure_file(self):
-        try:
-            with open(self.file_path, "r") as f:
-                json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-            with open(self.file_path, "w") as f:
-                json.dump({"users": []}, f)
+    def save(self, user: User) -> None:
+        data = self._load_data()
+        data[user.username] = user.__dict__
+        self._save_data(data)
 
-    def save_user(self, user: User):
-        with open(self.file_path, "r+") as f:
-            data = json.load(f)
-            data["users"].append({
-                "username": user.username,
-                "password_hash": user.password_hash,
-                "tokens": user.tokens
-            })
-            f.seek(0)
-            json.dump(data, f, indent=2)
-
-    def get_user(self, username: str) -> Optional[User]:
-        with open(self.file_path, "r") as f:
-            data = json.load(f)
-            for u in data["users"]:
-                if u["username"] == username:
-                    return User(
-                        username=u["username"],
-                        password_hash=u["password_hash"],
-                        tokens=u["tokens"]
-                    )
+    def find_by_username(self, username: str) -> Optional[User]:
+        data = self._load_data()
+        user_data = data.get(username)
+        if user_data:
+            return User(**user_data)
         return None
 
-    def update_user(self, user: User):
-        with open(self.file_path, "r+") as f:
-            data = json.load(f)
-            for i, u in enumerate(data["users"]):
-                if u["username"] == user.username:
-                    data["users"][i] = {
-                        "username": user.username,
-                        "password_hash": user.password_hash,
-                        "tokens": user.tokens
-                    }
-                    break
-            f.seek(0)
-            json.dump(data, f, indent=2)
+    def _load_data(self) -> dict:
+        try:
+            with open(self.file_path, 'r') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            return {}
 
-    def get_all_usernames(self) -> List[str]:
-        with open(self.file_path, "r") as f:
-            data = json.load(f)
-            return [u["username"] for u in data["users"]]
+    def _save_data(self, data: dict) -> None:
+        with open(self.file_path, 'w') as f:
+            json.dump(data, f, indent=2)

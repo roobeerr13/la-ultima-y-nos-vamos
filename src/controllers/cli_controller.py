@@ -1,5 +1,5 @@
 import cmd
-from src.services.poll_service import PollService  # Corrected import
+from src.services.poll_service import PollService
 from src.services.user_service import UserService
 from src.services.nft_service import NFTService
 
