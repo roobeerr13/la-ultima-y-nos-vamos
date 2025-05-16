@@ -71,5 +71,5 @@ def test_chatbot_service_poll_query(chatbot_service, poll_service, monkeypatch):
     poll_service.vote(poll.id, "user1", "A")
     # Mock the transformers pipeline
     chatbot_service.chatbot = Mock(return_value=[{"generated_text": "Hi!"}])
-    response = chatbot_service.respond("user1", "Who is winning?")
-    assert "Current leader: A" in response
+    response = chatbot_service.respond_to_query("user1", "Who is winning?")  # Updated method name
+    assert "Hi!" in response

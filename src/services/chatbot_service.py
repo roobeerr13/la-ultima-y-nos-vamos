@@ -4,7 +4,7 @@ from src.services.poll_service import PollService
 class ChatbotService:
     def __init__(self, poll_service: PollService):
         self.poll_service = poll_service
-        self.chatbot = pipeline("text-generation", model="gpt2")  
+        self.chatbot = pipeline("text-generation", model="gpt2")
 
     def respond_to_query(self, user_input: str, poll_id: str = None) -> str:
         active_polls = self.poll_service.get_active_polls()

@@ -12,12 +12,10 @@ class CLIController(cmd.Cmd):
         self.prompt = "(StreamApp) "
 
     def do_create_poll(self, line: str) -> None:
-        # Join parts split by | to handle cases where question contains |
         parts = line.split("|")
         if len(parts) < 3 or not all(parts):
             print("Usage: create_poll <question>|<options>|<duration>")
             return
-        # Extract duration (last part), options (second-to-last part), and question (everything else)
         try:
             duration = int(parts[-1].strip())
             options_str = parts[-2].strip()
@@ -37,7 +35,7 @@ class CLIController(cmd.Cmd):
     def do_vote(self, line: str) -> None:
         parts = line.split()
         if len(parts) != 3:
-            print("Usage: vote <poll_id> <username> <option>")
+            print("Error: Usage: vote <poll_id> <username> <option>")
             return
         try:
             poll_id, username, option = parts
