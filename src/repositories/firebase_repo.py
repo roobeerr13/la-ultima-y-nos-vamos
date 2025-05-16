@@ -3,14 +3,18 @@ from firebase_admin import credentials, firestore
 from typing import Optional, List
 from datetime import datetime
 
-# Inicializa Firebase
-cred = credentials.Certificate("src/serviceAccountKey.json")
-firebase_admin.initialize_app(cred)
+try:
+    cred = credentials.Certificate("src/serviceAccountKey.json")
+    firebase_admin.initialize_app(cred, {
+        'projectId': 'streamapp-19258',
+        'databaseId': 'streamapp'  # Ajusta este valor al nombre real de tu base de datos (puede ser 'default' o 'streamapp')
+    })
+except FileNotFoundError:
+    raise FileNotFoundError("El archivo serviceAccountKey.json no se encuentra en src/. Descarga el archivo desde la Consola de Firebase y colócalo en src/.")
 db = firestore.client()
 
 class FirebaseRepository:
     def save(self, collection: str, doc_id: str, data: dict) -> None:
-        # Convertir datetime a string si es necesario
         for key, value in data.items():
             if isinstance(value, datetime):
                 data[key] = value.isoformat()
@@ -20,7 +24,6 @@ class FirebaseRepository:
         doc = db.collection(collection).document(doc_id).get()
         if doc.exists:
             data = doc.to_dict()
-            # Convertir created_at de string a datetime si existe
             if "created_at" in data and isinstance(data["created_at"], str):
                 data["created_at"] = datetime.fromisoformat(data["created_at"])
             return data
