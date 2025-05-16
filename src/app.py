@@ -25,8 +25,9 @@ def main():
     ui_controller = UIController(poll_service, user_service, nft_service)
 
     if len(sys.argv) > 1 and sys.argv[1] == "--ui":
+        print("Launching Gradio UI...")
         ui = create_ui(ui_controller)
-        ui.launch()
+        ui.launch(show_error=True, debug=True)
     else:
         cli_controller.cmdloop()
 
