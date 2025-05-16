@@ -11,7 +11,7 @@ setup(
     description="Interactive voting app for streamers with polls, AI chatbot, and NFT tokens",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/[Your GitHub Username]/la_ultima_y_nos_vamos",
+    url="https://github.com/[Your GitHub Username]/la-ultima-y-nos-vamos",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     install_requires=[
@@ -29,7 +29,7 @@ setup(
     python_requires=">=3.8",
     entry_points={
         "console_scripts": [
-            "streamapp=src.app:main",  # Adjusted to point to src.app
+            "streamapp=src.app:main",
         ],
     },
 )

@@ -3,3 +3,4 @@ transformers
 pytest
 bcrypt
 pytest-cov
+setuptools
