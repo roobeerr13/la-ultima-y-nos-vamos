@@ -55,3 +55,26 @@ class FirebaseRepository:
                 data["created_at"] = datetime.fromisoformat(data["created_at"])
             result.append(data)
         return result
+
+# src/repositories/firebase_repo.py
+# ... (tu código actual con __init__ y find_by_id, etc.)
+
+    def find_by_id(self, collection: str, doc_id: str) -> Optional[dict[str, any]]:
+        """
+        Retrieves a document by its ID from a specific collection.
+        Args:
+            collection: The name of the collection (e.g., "users").
+            doc_id: The ID of the document (e.g., the user's UID).
+        Returns:
+            A dictionary containing the document data, or None if not found.
+        """
+        try:
+            doc = self._db.collection(collection).document(doc_id).get()
+            if doc.exists:
+                data = doc.to_dict()
+                return data # Firestore handles datetime natively
+            return None
+        except Exception as e:
+             print(f"Error finding document '{doc_id}' in '{collection}': {e}")
+             # Consider more specific exception handling if needed
+             return None # Devuelve None o relanza la excepción según prefieras

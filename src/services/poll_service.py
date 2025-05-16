@@ -1,91 +1,95 @@
-from typing import List, Optional
-from datetime import datetime
-from uuid import uuid4
-from src.models.encuesta import Poll
+# src/services/poll_service.py
+
 from src.repositories.firebase_repo import FirebaseRepository
-from src.patterns.observer import Subject
-from src.patterns.strategy import TieBreakerStrategy
-from sentence_transformers import SentenceTransformer
+from typing import Dict, Any, Optional
+# No necesitas importar datetime si dejas que Firestore lo maneje
 
-class PollService(Subject):
-    def __init__(self, poll_repo: FirebaseRepository, tie_breaker: TieBreakerStrategy, nft_service, user_service, chatbot_service=None):
-        super().__init__()
-        self.poll_repo = poll_repo
-        self.tie_breaker = tie_breaker
-        self.nft_service = nft_service
-        self.user_service = user_service
-        self.chatbot_service = chatbot_service
-        self.model = SentenceTransformer("all-MiniLM-L6-v2")
+class PollService:
+    """
+    Business logic for handling polls and potentially user-related data.
+    Depends on a repository to interact with data storage.
+    """
+    def __init__(self, repo: FirebaseRepository):
+        """
+        Initializes the PollService with a FirebaseRepository instance.
 
-    def create_poll(self, question: str, options: List[str], duration: int) -> Poll:
-        poll_id = str(uuid4())
-        poll_data = {
-            "id": poll_id,
-            "question": question,
-            "options": options,
-            "votes": {},
-            "status": "active",
-            "created_at": datetime.now(),
-            "duration_seconds": duration
-        }
-        self.poll_repo.save("polls", poll_id, poll_data)
-        return Poll(**poll_data)
+        Args:
+            repo: The FirebaseRepository instance to use for data access.
+        """
+        print("PollService initialized.") # Mensaje de depuración
+        self._repo = repo # Almacena la instancia del repositorio
 
-    def vote(self, poll_id: str, username: str, option: str) -> dict:
-        poll_data = self.poll_repo.find_by_id("polls", poll_id)
-        if not poll_data:
-            raise ValueError("Encuesta no encontrada")
-        poll = Poll(**poll_data)
-        if not poll.is_active():
-            raise ValueError("Encuesta no activa")
-        if username in poll.votes:
-            raise ValueError("El usuario ya votó")
-        poll.votes[username] = [option]
-        self.poll_repo.save("polls", poll.id, poll.__dict__)
-        token = self.nft_service.mint_token(username, poll_id, option)
-        self.user_service.add_token(username, token["token_id"])
-        self.notify_observers(poll_id, "vote", {"username": username, "option": option})
-        return token
+    # ... tus métodos actuales para encuestas ...
 
-    def close_poll(self, poll_id: str) -> None:
-        poll_data = self.poll_repo.find_by_id("polls", poll_id)
-        if not poll_data:
-            raise ValueError("Encuesta no encontrada")
-        poll = Poll(**poll_data)
-        if poll.is_active():
-            poll.status = "closed"
-            self.poll_repo.save("polls", poll.id, poll.__dict__)
-            self.notify_observers(poll_id, "close", self.get_final_results(poll_id))
+    def get_user_data(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Retrieves all data for a specific user by their UID.
 
-    def get_final_results(self, poll_id: str) -> dict:
-        poll_data = self.poll_repo.find_by_id("polls", poll_id)
-        if not poll_data:
-            raise ValueError("Encuesta no encontrada")
-        poll = Poll(**poll_data)
-        results = {opt: 0 for opt in poll.options}
-        for votes in poll.votes.values():
-            for opt in votes:
-                results[opt] += 1
-        max_votes = max(results.values())
-        winners = [opt for opt, count in results.items() if count == max_votes]
-        if len(winners) > 1:
-            winner = self.tie_breaker.resolve(winners)
+        Args:
+            user_id: The Firebase Authentication UID of the user.
+
+        Returns:
+            A dictionary with user data, or None if the user document doesn't exist.
+        """
+        print(f"PollService: Attempting to get data for user ID: {user_id}")
+        # Usamos el repositorio para buscar en la colección "users" por el UID
+        # Asumimos que tienes una colección llamada "users" en Firestore
+        user_data = self._repo.find_by_id("users", user_id)
+
+        if user_data:
+            print(f"PollService: Found data for user {user_id}")
         else:
-            winner = winners[0]
-        return {"winner": winner, "results": results}
+            print(f"PollService: No data found for user {user_id}")
 
-    def find_by_id(self, poll_id: str) -> Optional[Poll]:
-        poll_data = self.poll_repo.find_by_id("polls", poll_id)
-        return Poll(**poll_data) if poll_data else None
+        return user_data
 
-    def get_active_polls(self) -> List[Poll]:
-        poll_data_list = self.poll_repo.get_all("polls")
-        polls = [Poll(**data) for data in poll_data_list]
-        return [poll for poll in polls if poll.is_active()]
+    def get_user_tokens_string(self, user_id: str) -> str:
+        """
+        Retrieves the tokens for a specific user by their UID and formats as a string.
 
-    def get_embeddings(self, poll_id: str) -> list:
-        poll = self.find_by_id(poll_id)
-        if not poll:
-            raise ValueError("Encuesta no encontrada")
-        texts = [poll.question] + poll.options
-        return self.model.encode(texts).tolist()
+        Args:
+            user_id: The Firebase Authentication UID of the user.
+
+        Returns:
+            A string indicating the token count or if the user was not found.
+        """
+        print(f"PollService: Attempting to get tokens string for user ID: {user_id}")
+        user_data = self.get_user_data(user_id) # Reusa el método anterior
+
+        if user_data:
+            # Asumiendo que el campo se llama 'app_tokens'
+            # Usamos .get() para evitar KeyErrors si el campo 'app_tokens' no existe en el documento
+            tokens = user_data.get("app_tokens", "Campo 'app_tokens' no encontrado")
+            print(f"PollService: Tokens found: {tokens}")
+            return f"Tokens del usuario ({user_id}): {tokens}"
+        else:
+            return f"Usuario con ID {user_id} no encontrado en la base de datos."
+
+    def get_user_data_json_display(self, user_id: str) -> str:
+         """
+         Retrieves all data for a specific user and formats as a JSON string for display.
+
+         Args:
+             user_id: The Firebase Authentication UID of the user.
+
+         Returns:
+             A JSON formatted string with user data, or a message if not found.
+         """
+         print(f"PollService: Attempting to get user data JSON for ID: {user_id}")
+         user_data = self.get_user_data(user_id) # Reusa el método get_user_data
+
+         if user_data:
+              import json # Importa json aquí si no lo usas en otro lugar
+              # json.dumps convierte el diccionario a una cadena JSON.
+              # indent=4 para una salida bonita.
+              # default=str maneja tipos no serializables como datetime (los convierte a string)
+              try:
+                  json_data = json.dumps(user_data, indent=4, default=str)
+                  print(f"PollService: Prepared JSON data for {user_id}")
+                  return json_data
+              except Exception as e:
+                  print(f"Error converting user data to JSON for {user_id}: {e}")
+                  return f"Error al mostrar los datos del usuario {user_id}."
+         else:
+              return f"Usuario con ID {user_id} no encontrado en la base de datos."
+
