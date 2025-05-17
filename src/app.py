@@ -1,35 +1,67 @@
-from .controllers.cli_controller import CLIController
-from .controllers.ui_controller import UIController
-from .services.poll_service import PollService
-from .services.user_service import UserService
-from .services.nft_service import NFTService
-from .repositories.encuesta_repo import PollRepository
-from .repositories.usuario_repo import UserRepository
-from .repositories.nft_repo import NFTRepository
-from .patterns.strategy import RandomTieBreaker
-from .ui.gradio_app import create_ui
+from src.controllers.cli_controller import CLIController
+from src.controllers.ui_controller import UIController
+from src.services.poll_service import PollService
+from src.services.user_service import UserService
+from src.services.nft_service import NFTService
+from src.services.chatbot_service import ChatbotService
+from src.services.dashboard_service import DashboardService
+from src.repositories.mongodb_repo import MongoDBRepository
+from src.patterns.strategy import RandomTieBreaker
+from src.ui.gradio_app import create_ui
 import sys
+from datetime import datetime
 
 def main():
-    file_path = "data/polls.json"
-    poll_repo = PollRepository(file_path)
-    user_file_path = "data/users.json"
-    user_repo = UserRepository(user_file_path)
-    nft_file_path = "data/nfts.json"
-    nft_repo = NFTRepository(nft_file_path)
-    tie_breaker = RandomTieBreaker()
-    poll_service = PollService(poll_repo, tie_breaker)
-    user_service = UserService(user_repo)
-    nft_service = NFTService(nft_repo)
-    cli_controller = CLIController(poll_service, user_service, nft_service)
-    ui_controller = UIController(poll_service, user_service, nft_service)
+    # Inicializa el repositorio MongoDB
+    repo = MongoDBRepository(connection_string="mongodb://localhost:27017/", database_name="streamapp")
+    
+    # Datos iniciales para las colecciones
+    initial_poll = {
+        "_id": "initial_poll",
+        "question": "¿Qué prefieres?",
+        "options": ["Opción 1", "Opción 2"],
+        "votes": {},
+        "status": "active",
+        "created_at": datetime.now().isoformat(),
+        "duration_seconds": 3600
+    }
+    initial_user = {
+        "_id": "admin",
+        "username": "admin",
+        "password_hash": "hashed_password_here",  # Reemplaza con un hash real
+        "token_ids": []
+    }
+    initial_nft = {
+        "_id": "initial_nft",
+        "owner": "admin",
+        "poll_id": "initial_poll",
+        "option": "Opción 1",
+        "issued_at": datetime.now().isoformat()
+    }
+    repo.save("polls", initial_poll["_id"], initial_poll)
+    repo.save("users", initial_user["_id"], initial_user)
+    repo.save("nfts", initial_nft["_id"], initial_nft)
 
+    # Inicializa servicios
+    tie_breaker = RandomTieBreaker()
+    user_service = UserService(repo)
+    nft_service = NFTService(repo)
+    poll_service = PollService(repo, tie_breaker, nft_service, user_service)
+    chatbot_service = ChatbotService(poll_service)  # Integraremos Hugging Face aquí luego
+    dashboard_service = DashboardService(poll_service)
+    cli_controller = CLIController(poll_service, user_service, nft_service, chatbot_service)
+    ui_controller = UIController(poll_service, user_service, nft_service, chatbot_service, dashboard_service)
+
+    # Lanza la interfaz o CLI según el argumento
     if len(sys.argv) > 1 and sys.argv[1] == "--ui":
-        print("Launching Gradio UI...")
+        print("Lanzando interfaz de Gradio...")
         ui = create_ui(ui_controller)
         ui.launch(show_error=True, debug=True)
     else:
         cli_controller.cmdloop()
+
+    # Cierra la conexión
+    repo.close()
 
 if __name__ == "__main__":
     main()
