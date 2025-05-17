@@ -1,6 +1,14 @@
 import json
 from typing import Optional
 from src.models.usuario import User
+from pymongo import MongoClient
+
+client = MongoClient('mongodb://localhost:27017/')  # Cambia si usas MongoDB Atlas
+db = client['tu_base_de_datos']
+usuarios = db['usuarios']
+
+# Prueba obteniendo un usuario
+print(list(usuarios.find()))
 
 class UserRepository:
     def __init__(self, file_path: str):
