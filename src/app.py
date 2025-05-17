@@ -12,10 +12,8 @@ import sys
 from datetime import datetime
 
 def main():
-    # Inicializa el repositorio MongoDB
     repo = MongoDBRepository(connection_string="mongodb://localhost:27017/", database_name="streamapp")
     
-    # Datos iniciales para las colecciones
     initial_poll = {
         "_id": "initial_poll",
         "question": "¿Qué prefieres?",
@@ -28,7 +26,7 @@ def main():
     initial_user = {
         "_id": "admin",
         "username": "admin",
-        "password_hash": "hashed_password_here",  # Reemplaza con un hash real
+        "password_hash": "hashed_password_here",
         "token_ids": []
     }
     initial_nft = {
@@ -42,17 +40,15 @@ def main():
     repo.save("users", initial_user["_id"], initial_user)
     repo.save("nfts", initial_nft["_id"], initial_nft)
 
-    # Inicializa servicios
     tie_breaker = RandomTieBreaker()
     user_service = UserService(repo)
     nft_service = NFTService(repo)
     poll_service = PollService(repo, tie_breaker, nft_service, user_service)
-    chatbot_service = ChatbotService(poll_service)  # Integraremos Hugging Face aquí luego
+    chatbot_service = ChatbotService(poll_service)
     dashboard_service = DashboardService(poll_service)
     cli_controller = CLIController(poll_service, user_service, nft_service, chatbot_service)
     ui_controller = UIController(poll_service, user_service, nft_service, chatbot_service, dashboard_service)
 
-    # Lanza la interfaz o CLI según el argumento
     if len(sys.argv) > 1 and sys.argv[1] == "--ui":
         print("Lanzando interfaz de Gradio...")
         ui = create_ui(ui_controller)
@@ -60,7 +56,6 @@ def main():
     else:
         cli_controller.cmdloop()
 
-    # Cierra la conexión
     repo.close()
 
 if __name__ == "__main__":
