@@ -1,18 +1,22 @@
-from .controllers.cli_controller import CLIController
-from .controllers.ui_controller import UIController
-from .services.poll_service import PollService
-from .services.user_service import UserService
-from .services.nft_service import NFTService
-from .services.chatbot_service import ChatbotService
-from .services.dashboard_service import DashboardService
-from .repositories.mongodb_repo import MongoDBRepository
-from .patterns.strategy import RandomTieBreaker
-from .ui.gradio_app import create_ui
 import sys
+import os
+from src.controllers.cli_controller import CLIController
+from src.controllers.ui_controller import UIController
+from src.services.poll_service import PollService
+from src.services.user_service import UserService
+from src.services.nft_service import NFTService
+from src.services.chatbot_service import ChatbotService
+from src.services.dashboard_service import DashboardService
+from src.repositories.mongodb_repo import MongoDBRepository
+from src.patterns.strategy import RandomTieBreaker
+from src.ui.gradio_app import create_ui
 from datetime import datetime
 
+# Asegurar que src es reconocido como paquete raíz
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 def main():
-    repo = MongoDBRepository(connection_string="mongodb://localhost:27017/", database_name="streamapp")
+    repo = MongoDBRepository(connection_string="mongodb+srv://robertojj2006:n7TW7dDKdWueN4dT@streamapp2.d6ichyj.mongodb.net/", database_name="streamapp")
     
     initial_poll = {
         "_id": "initial_poll",
@@ -36,6 +40,7 @@ def main():
         "option": "Opción 1",
         "issued_at": datetime.now().isoformat()
     }
+
     repo.save("polls", initial_poll["_id"], initial_poll)
     repo.save("users", initial_user["_id"], initial_user)
     repo.save("nfts", initial_nft["_id"], initial_nft)
