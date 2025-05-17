@@ -34,39 +34,51 @@ class GradioUI:
             with gr.Tab("Registro / Inicio de Sesión"):
                 username = gr.Textbox(label="Usuario")
                 password = gr.Textbox(label="Contraseña", type="password")
+                register_output = gr.Textbox(label="Estado Registro", interactive=False)
+                login_output = gr.Textbox(label="Estado Inicio de Sesión", interactive=False)
+                
                 register_btn = gr.Button("Registrarse")
                 login_btn = gr.Button("Iniciar Sesión")
-                register_btn.click(self.register_user, inputs=[username, password], outputs="text")
-                login_btn.click(self.login_user, inputs=[username, password], outputs="text")
+                register_btn.click(self.register_user, inputs=[username, password], outputs=[register_output])
+                login_btn.click(self.login_user, inputs=[username, password], outputs=[login_output])
 
             with gr.Tab("Crear Encuesta"):
                 question = gr.Textbox(label="Pregunta")
                 options = gr.Textbox(label="Opciones (separadas por comas)")
                 duration = gr.Number(label="Duración (segundos)")
+                poll_output = gr.Textbox(label="Estado Encuesta", interactive=False)
+                
                 create_poll_btn = gr.Button("Crear Encuesta")
-                create_poll_btn.click(self.create_poll, inputs=[question, options, duration], outputs="text")
+                create_poll_btn.click(self.create_poll, inputs=[question, options, duration], outputs=[poll_output])
 
             with gr.Tab("Votar"):
                 poll_id = gr.Textbox(label="ID de Encuesta")
                 username_vote = gr.Textbox(label="Usuario")
                 option_vote = gr.Textbox(label="Opción")
+                vote_output = gr.Textbox(label="Estado Votación", interactive=False)
+                
                 vote_btn = gr.Button("Votar")
-                vote_btn.click(self.vote_poll, inputs=[poll_id, username_vote, option_vote], outputs="text")
+                vote_btn.click(self.vote_poll, inputs=[poll_id, username_vote, option_vote], outputs=[vote_output])
 
             with gr.Tab("Dashboard"):
+                dashboard_output = gr.Textbox(label="Estado Dashboard", interactive=False)
                 dashboard_btn = gr.Button("Ver Dashboard")
-                dashboard_btn.click(self.dashboard, outputs="text")
+                dashboard_btn.click(self.dashboard, outputs=[dashboard_output])
 
             with gr.Tab("Chatbot"):
                 user_input = gr.Textbox(label="Habla con el chatbot")
+                chatbot_output = gr.Textbox(label="Respuesta del Chatbot", interactive=False)
+                
                 chatbot_btn = gr.Button("Enviar")
-                chatbot_btn.click(self.chatbot_response, inputs=[user_input], outputs="text")
+                chatbot_btn.click(self.chatbot_response, inputs=[user_input], outputs=[chatbot_output])
 
             with gr.Tab("Trade de Tokens NFT"):
                 token_id = gr.Textbox(label="ID del Token")
                 new_owner = gr.Textbox(label="Nuevo Propietario")
+                trade_output = gr.Textbox(label="Estado de la Transferencia", interactive=False)
+                
                 trade_btn = gr.Button("Transferir")
-                trade_btn.click(self.trade_token, inputs=[token_id, new_owner], outputs="text")
+                trade_btn.click(self.trade_token, inputs=[token_id, new_owner], outputs=[trade_output])
 
         return demo
 
