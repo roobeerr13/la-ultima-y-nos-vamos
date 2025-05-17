@@ -1,13 +1,13 @@
-from src.controllers.cli_controller import CLIController
-from src.controllers.ui_controller import UIController
-from src.services.poll_service import PollService
-from src.services.user_service import UserService
-from src.services.nft_service import NFTService
-from src.services.chatbot_service import ChatbotService
-from src.services.dashboard_service import DashboardService
-from src.repositories.mongodb_repo import MongoDBRepository
-from src.patterns.strategy import RandomTieBreaker
-from src.ui.gradio_app import create_ui
+from .controllers.cli_controller import CLIController
+from .controllers.ui_controller import UIController
+from .services.poll_service import PollService
+from .services.user_service import UserService
+from .services.nft_service import NFTService
+from .services.chatbot_service import ChatbotService
+from .services.dashboard_service import DashboardService
+from .repositories.mongodb_repo import MongoDBRepository
+from .patterns.strategy import RandomTieBreaker
+from .ui.gradio_app import create_ui
 import sys
 from datetime import datetime
 
