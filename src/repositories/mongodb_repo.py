@@ -3,7 +3,7 @@ from typing import Optional, List
 from datetime import datetime
 
 class MongoDBRepository:
-    def __init__(self, connection_string="mongodb+srv://robertojj2006:<db_password>@streamapp.p6uul75.mongodb.net/", database_name="streamapp"):
+    def __init__(self, connection_string="mongodb+srv://robertojj2006:n7TW7dDKdWueN4dT@streamapp2.d6ichyj.mongodb.net/", database_name="streamapp"):
         self.client = MongoClient(connection_string)
         self.db = self.client[database_name]
 
