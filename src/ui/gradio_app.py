@@ -14,9 +14,8 @@ class GradioUI:
 
     def create_poll(self, question: str, options: str, duration: int):
         options_list = options.split(",")
-        poll_id = str(uuid.uuid4())  # Generar un ID único
-        result = self.ui_controller.create_poll(poll_id, question, options_list, duration)
-        return f"Encuesta creada con ID: {poll_id}. Resultado: {result}"
+        result = self.ui_controller.create_poll(question, options_list, duration)  # Se eliminó poll_id
+        return f"Encuesta creada. Resultado: {result}"
 
     def vote_poll(self, poll_id: str, username: str, option: str):
         result = self.ui_controller.vote(poll_id, username, option)
