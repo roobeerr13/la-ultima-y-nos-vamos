@@ -15,3 +15,14 @@ with driver.session() as session:
     session.execute_write(test_connection)
 
 driver.close()
+
+
+
+from neo4j import GraphDatabase
+
+# URI examples: "neo4j://localhost", "neo4j+s://xxx.databases.neo4j.io"
+URI = "neo4j+s://d30f7b5d.databases.neo4j.io"
+AUTH = ("neo4j", "J028d1qdxArBi0gO7bnk364fIMAzbBp77Wt0hLPc6-Y")
+
+with GraphDatabase.driver(URI, auth=AUTH) as driver:
+    driver.verify_connectivity()
