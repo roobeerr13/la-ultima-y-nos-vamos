@@ -1,30 +1,41 @@
-import json
 from typing import Optional
 from src.models.token_nft import TokenNFT
+from datetime import datetime
+from src.db.neo4j import driver
 
 class NFTRepository:
-    def __init__(self, file_path: str):
-        self.file_path = file_path
-
     def save(self, token: TokenNFT) -> None:
-        data = self._load_data()
-        data[token.token_id] = token.__dict__
-        self._save_data(data)
+        with driver.session() as session:
+            session.run(
+                """
+                MERGE (t:TokenNFT {token_id: $token_id})
+                SET t.owner = $owner,
+                    t.poll_id = $poll_id,
+                    t.option = $option,
+                    t.issued_at = $issued_at
+                """,
+                token_id=token.token_id,
+                owner=token.owner,
+                poll_id=token.poll_id,
+                option=token.option,
+                issued_at=token.issued_at.isoformat()
+            )
 
     def find_by_id(self, token_id: str) -> Optional[TokenNFT]:
-        data = self._load_data()
-        token_data = data.get(token_id)
-        if token_data:
-            return TokenNFT(**token_data)
-        return None
-
-    def _load_data(self) -> dict:
-        try:
-            with open(self.file_path, 'r') as f:
-                return json.load(f)
-        except FileNotFoundError:
-            return {}
-
-    def _save_data(self, data: dict) -> None:
-        with open(self.file_path, 'w') as f:
-            json.dump(data, f, indent=2, default=str)
+        with driver.session() as session:
+            result = session.run(
+                "MATCH (t:TokenNFT {token_id: $token_id}) RETURN t",
+                token_id=token_id
+            )
+            record = result.single()
+            if record:
+                t = record["t"]
+                issued_at = datetime.fromisoformat(t["issued_at"])
+                return TokenNFT(
+                    token_id=t["token_id"],
+                    owner=t["owner"],
+                    poll_id=t["poll_id"],
+                    option=t["option"],
+                    issued_at=issued_at
+                )
+            return None

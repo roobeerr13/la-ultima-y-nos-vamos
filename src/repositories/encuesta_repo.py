@@ -1,33 +1,48 @@
-import json
-from typing import List, Optional
+from typing import Optional
 from src.models.encuesta import Poll
 from datetime import datetime
+from src.db.neo4j import driver
 
 class PollRepository:
-    def __init__(self, file_path: str):
-        self.file_path = file_path
-
     def save(self, poll: Poll) -> None:
-        data = self._load_data()
-        data[poll.id] = poll.__dict__
-        self._save_data(data)
+        with driver.session() as session:
+            session.run(
+                """
+                MERGE (p:Poll {id: $id})
+                SET p.question = $question,
+                    p.options = $options,
+                    p.votes = $votes,
+                    p.status = $status,
+                    p.created_at = $created_at,
+                    p.duration_seconds = $duration_seconds
+                """,
+                id=poll.id,
+                question=poll.question,
+                options=poll.options,
+                votes=poll.votes,
+                status=poll.status,
+                created_at=poll.created_at.isoformat(),
+                duration_seconds=poll.duration_seconds
+            )
 
     def find_by_id(self, poll_id: str) -> Optional[Poll]:
-        data = self._load_data()
-        poll_data = data.get(poll_id)
-        if poll_data:
-            if 'created_at' in poll_data and isinstance(poll_data['created_at'], str):
-                poll_data['created_at'] = datetime.fromisoformat(poll_data['created_at'])
-            return Poll(**poll_data)
-        return None
-
-    def _load_data(self) -> dict:
-        try:
-            with open(self.file_path, 'r') as f:
-                return json.load(f)
-        except FileNotFoundError:
-            return {}
-
-    def _save_data(self, data: dict) -> None:
-        with open(self.file_path, 'w') as f:
-            json.dump(data, f, indent=2, default=str)
+        with driver.session() as session:
+            result = session.run(
+                "MATCH (p:Poll {id: $id}) RETURN p",
+                id=poll_id
+            )
+            record = result.single()
+            if record:
+                p = record["p"]
+                # Neo4j stores everything as string, so we need to convert types
+                created_at = datetime.fromisoformat(p["created_at"])
+                return Poll(
+                    id=p["id"],
+                    question=p["question"],
+                    options=p["options"],
+                    votes=p.get("votes", {}),
+                    status=p["status"],
+                    created_at=created_at,
+                    duration_seconds=int(p["duration_seconds"])
+                )
+            return None

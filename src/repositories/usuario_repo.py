@@ -1,30 +1,30 @@
-import json
 from typing import Optional
 from src.models.usuario import User
+from src.db.neo4j import driver
 
 class UserRepository:
-    def __init__(self, file_path: str):
-        self.file_path = file_path
-
     def save(self, user: User) -> None:
-        data = self._load_data()
-        data[user.username] = user.__dict__
-        self._save_data(data)
+        with driver.session() as session:
+            session.run(
+                "MERGE (u:User {username: $username}) "
+                "SET u.password_hash = $password_hash, u.token_ids = $token_ids",
+                username=user.username,
+                password_hash=user.password_hash,
+                token_ids=user.token_ids
+            )
 
     def find_by_username(self, username: str) -> Optional[User]:
-        data = self._load_data()
-        user_data = data.get(username)
-        if user_data:
-            return User(**user_data)
-        return None
-
-    def _load_data(self) -> dict:
-        try:
-            with open(self.file_path, 'r') as f:
-                return json.load(f)
-        except FileNotFoundError:
-            return {}
-
-    def _save_data(self, data: dict) -> None:
-        with open(self.file_path, 'w') as f:
-            json.dump(data, f, indent=2)
+        with driver.session() as session:
+            result = session.run(
+                "MATCH (u:User {username: $username}) RETURN u",
+                username=username
+            )
+            record = result.single()
+            if record:
+                u = record["u"]
+                return User(
+                    username=u["username"],
+                    password_hash=u["password_hash"],
+                    token_ids=u.get("token_ids", [])
+                )
+            return None
