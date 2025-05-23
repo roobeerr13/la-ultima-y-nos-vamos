@@ -11,6 +11,7 @@ from src.controllers.ui_controller import UIController
 from src.ui.gradio_app import create_ui
 
 def main():
+    print("Bienvenido a la app de encuestas con Neo4j 🚀")
     poll_repo = PollRepository()
     user_repo = UserRepository()
     nft_repo = NFTRepository()
@@ -27,3 +28,6 @@ def main():
         ui.launch(show_error=True, debug=True)
     else:
         cli_controller.cmdloop()
+
+if __name__ == "__main__":
+    main()
